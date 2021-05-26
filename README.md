@@ -1,6 +1,6 @@
 # julia-package-publish
 
-Setting the version number in Project.toml, commit and tag the new version, then register it into the private registry 
+Update the version number in Project.toml, commit and tag the new version, then register it into a private registry 
 
 # Usage
 
@@ -22,6 +22,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: '0'
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.6'
       - name: Bump up version
         uses: anothrNick/github-tag-action@1.26.0
         id: tagger
@@ -36,7 +39,8 @@ jobs:
           version: ${{steps.tagger.outputs.new_tag}}
           ssh_key: ${{ secrets.SSH }}
           julia_registry_url: 'git@github.com:$(your-registry-repo)'
-          julia_registry_name: 'your-registry-repo'
+          julia_registry_name: '$(your-registry-name)'
+          julia_registry_branch: 'master'
 ```
 
 Please add `paths` session in the trigger since this action will automatically push the new Project.toml in the repository. Please add `paths` without `**.toml` to prevent endlessly and recursively triggering actions.
