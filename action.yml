@@ -19,22 +19,19 @@ inputs:
     description: The julia registry branch to push
     required: false
     default: 'master'
-  no_registry_push: 
-    description: Only update Project.toml but no package registering
-    required: false
-    default: false
 runs:
   using: 'composite'
   steps: 
     - shell: bash
-      env:
-        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
       run: |
         echo "setting up git credentials"
         mkdir -p /home/runner/.ssh
         echo "${{ inputs.ssh_key }}" > /home/runner/.ssh/id_somekind
         chmod 400 /home/runner/.ssh/id_somekind
-        ssh-agent -a $SSH_AUTH_SOCK > /dev/null 
+        if [[ -z "${SSH_AUTH_SOCK}" ]]; then
+          SSH_AUTH_SOCK=/tmp/ssh_agent.sock
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null 
+        fi
         ssh-add /home/runner/.ssh/id_somekind
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "<>"
