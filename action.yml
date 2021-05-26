@@ -4,7 +4,8 @@ description: Modifies the version number in Julia project.toml (continuously add
 inputs:
   version:
     description: The version number
-    required: true
+    default: ''
+    required: false
   ssh_key: 
     description: The ssh key for accessing the private Julia registry and the project's git repository
     required: true
@@ -14,6 +15,14 @@ inputs:
   julia_registry_name: 
     description: The private julia registry name
     required: true
+  julia_registry_branch: 
+    description: The julia registry branch to push
+    required: false
+    default: 'master'
+  no_registry_push: 
+    description: Only update Project.toml but no package registering
+    required: false
+    default: false
 runs:
   using: 'composite'
   steps: 
@@ -27,21 +36,14 @@ runs:
         chmod 400 /home/runner/.ssh/id_somekind
         ssh-agent -a $SSH_AUTH_SOCK > /dev/null 
         ssh-add /home/runner/.ssh/id_somekind
-        git config user.name "GitHub Actions Bot"
-        git config user.email "<>"
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "<>"
         git fetch --all
         git pull
-        echo "bumping the Julia package version"
+        echo "bumping up the Julia package version"
         julia "$GITHUB_ACTION_PATH"/bump_version.jl ${{inputs.version}}
-        git add Project.toml
-        git commit -m "Update version to ${{inputs.version}}"
-        git push
-        git tag -a -f ${{inputs.version}} -m "Update version to ${{inputs.version}}"
-        git push --tags
         echo "registering Julia package to the registry"
-        julia "$GITHUB_ACTION_PATH"/julia_register.jl ${{inputs.julia_registry_name}} ${{inputs.julia_registry_url}}
-        cd /home/runner/.julia/registries/${{inputs.julia_registry_name}}/
-        git push
+        julia "$GITHUB_ACTION_PATH"/julia_register.jl ${{inputs.julia_registry_name}} ${{inputs.julia_registry_url}} ${{inputs.julia_registry_branch}}
 branding:
   icon: package
   color: red
