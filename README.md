@@ -35,6 +35,8 @@ jobs:
           DRY_RUN: true
       - name: Register new Julia Package version
         uses: n6171028/julia-package-publish@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           version: ${{steps.tagger.outputs.new_tag}}
           ssh_key: ${{ secrets.SSH }}
