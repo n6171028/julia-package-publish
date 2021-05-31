@@ -7,6 +7,14 @@ using Git
 
 # Extract the version number to be updated
 VERSION = ARGS[1]
+GITHUB_REPOSITORY = ENV["GITHUB_REPOSITORY"]
+GITHUB_REF = ENV["GITHUB_REF"]
+TOKEN = ""
+URL = ""
+if haskey(ENV, "GITHUB_TOKEN")
+    TOKEN = ENV["GITHUB_TOKEN"]
+    URL = "https://x-access-token:$(TOKEN)@github.com/$(GITHUB_REPOSITORY).git"
+end
 
 # Read the Project.toml file in the package
 fname = "Project.toml";
@@ -30,8 +38,16 @@ else
     # Commit the new Project.toml
     run(`$(git()) add Project.toml`)
     run(`$(git()) commit -m "Update version to v$(VERSION)"`)
-    run(`$(git()) push`)
+    if isempty(URL)
+        run(`$(git()) push`)
+    else
+        run(`$(git()) push $(URL)`)
+    end
 end
 
 run(`$(git()) tag -a -f "v$(VERSION)" -m "Update version to v$(VERSION)"`)
-run(`$(git()) push --tags`)
+if isempty(URL)
+    run(`$(git()) push --tags`)
+else
+    run(`$(git()) push --tags $(URL)`)
+end

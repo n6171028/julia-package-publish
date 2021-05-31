@@ -7,7 +7,7 @@ inputs:
     default: ''
     required: false
   ssh_key: 
-    description: The ssh key for accessing the private Julia registry and the project's git repository
+    description: The ssh key for accessing the private Julia registry
     required: true
   julia_registry_url: 
     description: The private julia registry url
