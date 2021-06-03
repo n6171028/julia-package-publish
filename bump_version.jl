@@ -6,9 +6,12 @@ using TOML
 using Git
 
 # Extract the version number to be updated
-VERSION = ARGS[1]
+VERSION = ""
+if length(ARGS) > 0
+    VERSION = ARGS[1]
+end
+
 GITHUB_REPOSITORY = ENV["GITHUB_REPOSITORY"]
-GITHUB_REF = ENV["GITHUB_REF"]
 TOKEN = ""
 URL = ""
 if haskey(ENV, "GITHUB_TOKEN")
@@ -30,24 +33,22 @@ else
     VERSION = replace(VERSION, "V" => "")
 
     # Update the version number in the Project.toml
-    dict_project["version"] = VERSION
-    open(fname, "w") do io
-        TOML.print(io, dict_project)
-    end
+    if dict_project["version"] != VERSION
+        dict_project["version"] = VERSION
+        open(fname, "w") do io
+            TOML.print(io, dict_project)
+        end
 
-    # Commit the new Project.toml
-    run(`$(git()) add Project.toml`)
-    run(`$(git()) commit -m "Update version to v$(VERSION)"`)
-    if isempty(URL)
-        run(`$(git()) push`)
-    else
-        run(`$(git()) push $(URL)`)
+        # Commit the new Project.toml
+        run(`$(git()) add Project.toml`)
+        run(`$(git()) commit -m "Update version to v$(VERSION)"`)
+        if isempty(URL)
+            run(`$(git()) push`)
+        else
+            run(`$(git()) push $(URL)`)
+        end
     end
 end
 
-run(`$(git()) tag -a -f "v$(VERSION)" -m "Update version to v$(VERSION)"`)
-if isempty(URL)
-    run(`$(git()) push --tags`)
-else
-    run(`$(git()) push --tags $(URL)`)
-end
+# Set output
+run(`echo "::set-output name=version::$(VERSION)"`)
