@@ -8,31 +8,44 @@ inputs:
     required: false
   ssh_key: 
     description: The ssh key for accessing the private Julia registry
-    required: true
+    required: false
   julia_registry_url: 
     description: The private julia registry url
-    required: true
+    required: false
+    default: 'Default'
   julia_registry_name: 
     description: The private julia registry name
-    required: true
+    required: false
+    default: 'General'
   julia_registry_branch: 
     description: The julia registry branch to push
     required: false
     default: 'master'
+  dry_run:
+    description: Do not register the new version
+    required: false
+    default: 'false'
+outputs:
+  version:
+    description: 'The version registered to the Julia registry'
+    value: ${{ steps.julia_job.outputs.version }}
 runs:
   using: 'composite'
   steps: 
     - shell: bash
+      id: julia_job
       run: |
-        echo "setting up git credentials"
-        mkdir -p /home/runner/.ssh
-        echo "${{ inputs.ssh_key }}" > /home/runner/.ssh/id_somekind
-        chmod 400 /home/runner/.ssh/id_somekind
         if [[ -z "${SSH_AUTH_SOCK}" ]]; then
           SSH_AUTH_SOCK=/tmp/ssh_agent.sock
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null 
         fi
-        ssh-add /home/runner/.ssh/id_somekind
+        if [[ -n "${{ inputs.ssh_key }}" ]]; then
+          echo "setting up git credentials"
+          mkdir -p /home/runner/.ssh
+          echo "${{ inputs.ssh_key }}" > /home/runner/.ssh/id_somekind
+          chmod 400 /home/runner/.ssh/id_somekind
+          ssh-add /home/runner/.ssh/id_somekind
+        fi
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "<>"
         git fetch --all
@@ -40,7 +53,7 @@ runs:
         echo "bumping up the Julia package version"
         julia "$GITHUB_ACTION_PATH"/bump_version.jl ${{inputs.version}}
         echo "registering Julia package to the registry"
-        julia "$GITHUB_ACTION_PATH"/julia_register.jl ${{inputs.julia_registry_name}} ${{inputs.julia_registry_url}} ${{inputs.julia_registry_branch}}
+        julia "$GITHUB_ACTION_PATH"/julia_register.jl ${{inputs.julia_registry_name}} ${{inputs.julia_registry_url}} ${{inputs.julia_registry_branch}} ${{inputs.dry_run}}
 branding:
   icon: package
   color: red
