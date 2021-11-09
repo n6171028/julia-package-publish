@@ -48,8 +48,6 @@ runs:
         fi
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "<>"
-        git fetch --all
-        git pull
         echo "bumping up the Julia package version"
         julia "$GITHUB_ACTION_PATH"/bump_version.jl ${{inputs.version}}
         echo "registering Julia package to the registry"
