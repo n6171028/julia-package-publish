@@ -42,6 +42,7 @@ else
         # Commit the new Project.toml
         run(`$(git()) add Project.toml`)
         run(`$(git()) commit -m "Update version to v$(VERSION)"`)
+        run(`$(git()) restore .`)
         if isempty(URL)
             run(`$(git()) push`)
         else
