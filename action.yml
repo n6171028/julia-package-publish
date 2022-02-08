@@ -25,6 +25,10 @@ inputs:
     description: Do not register the new version
     required: false
     default: 'false'
+  no_tag:
+    description: Do not tag the new version
+    required: false
+    default: 'false'
 outputs:
   version:
     description: 'The version registered to the Julia registry'
@@ -51,7 +55,7 @@ runs:
         echo "bumping up the Julia package version"
         julia "$GITHUB_ACTION_PATH"/bump_version.jl ${{inputs.version}}
         echo "registering Julia package to the registry"
-        julia "$GITHUB_ACTION_PATH"/julia_register.jl ${{inputs.julia_registry_name}} ${{inputs.julia_registry_url}} ${{inputs.julia_registry_branch}} ${{inputs.dry_run}}
+        julia "$GITHUB_ACTION_PATH"/julia_register.jl ${{inputs.julia_registry_name}} ${{inputs.julia_registry_url}} ${{inputs.julia_registry_branch}} ${{inputs.dry_run}} ${{inputs.no_tag}}
 branding:
   icon: package
   color: red

@@ -9,6 +9,7 @@ registry_name = ARGS[1]
 registry_url = ARGS[2]
 registry_branch = ARGS[3]
 dry_run = ARGS[4]
+no_tag = ARGS[5]
 
 if lowercase(dry_run) != "true" && lowercase(dry_run) != "yes"
     # Add the private Julia registry
@@ -25,14 +26,17 @@ if lowercase(dry_run) != "true" && lowercase(dry_run) != "yes"
         URL = "https://x-access-token:$(TOKEN)@github.com/$(GITHUB_REPOSITORY).git"
     end
 
+
     fname = "Project.toml";
     dict_project = TOML.parsefile(fname)
     VERSION = dict_project["version"]
-    run(`$(git()) tag -a -f "v$(VERSION)" -m "Update version to v$(VERSION)"`)
-    if isempty(URL)
-        run(`$(git()) push --tags`)
-    else
-        run(`$(git()) push --tags $(URL)`)
+    if lowercase(no_tag) == "false"
+        run(`$(git()) tag -a -f "v$(VERSION)" -m "Update version to v$(VERSION)"`)
+        if isempty(URL)
+            run(`$(git()) push --tags`)
+        else
+            run(`$(git()) push --tags $(URL)`)
+        end
     end
 
     # Get the package location
