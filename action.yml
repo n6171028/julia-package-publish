@@ -2,33 +2,21 @@ name: Publish Julia Package
 author: Shane Cheng
 description: Modifies the version number in Julia project.toml (continuously adding new functions)
 inputs:
-  version:
-    description: The version number
-    default: ''
-    required: false
   ssh_key: 
     description: The ssh key for accessing the private Julia registry
     required: false
   julia_registry_url: 
-    description: The private julia registry url
+    description: The julia registry url
     required: false
-    default: 'Default'
+    default: 'git@github.com:JuliaRegistries/General.git'
   julia_registry_name: 
     description: The private julia registry name
     required: false
     default: 'General'
-  julia_registry_branch: 
-    description: The julia registry branch to push
+  release_branches:
+    description: Only register and tag if triggered from these branches
     required: false
-    default: 'master'
-  dry_run:
-    description: Do not register the new version
-    required: false
-    default: 'false'
-  no_tag:
-    description: Do not tag the new version
-    required: false
-    default: 'false'
+    default: 'master,main'
 outputs:
   version:
     description: 'The version registered to the Julia registry'
@@ -43,19 +31,9 @@ runs:
           SSH_AUTH_SOCK=/tmp/ssh_agent.sock
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null 
         fi
-        if [[ -n "${{ inputs.ssh_key }}" ]]; then
-          echo "setting up git credentials"
-          mkdir -p /home/runner/.ssh
-          echo "${{ inputs.ssh_key }}" > /home/runner/.ssh/id_somekind
-          chmod 400 /home/runner/.ssh/id_somekind
-          ssh-add /home/runner/.ssh/id_somekind
-        fi
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "<>"
-        echo "bumping up the Julia package version"
-        julia "$GITHUB_ACTION_PATH"/bump_version.jl ${{inputs.version}}
-        echo "registering Julia package to the registry"
-        julia "$GITHUB_ACTION_PATH"/julia_register.jl ${{inputs.julia_registry_name}} ${{inputs.julia_registry_url}} ${{inputs.julia_registry_branch}} ${{inputs.dry_run}} ${{inputs.no_tag}}
+        julia "$GITHUB_ACTION_PATH"/register.jl ${{inputs.julia_registry_url}} ${{inputs.julia_registry_name}} ${{inputs.release_branches}}
 branding:
   icon: package
   color: red
