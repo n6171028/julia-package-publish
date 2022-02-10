@@ -25,27 +25,17 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1.6'
-      - name: Bump up version
-        uses: anothrNick/github-tag-action@1.26.0
-        id: tagger
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BRANCHES: master
-          WITH_V: true
-          DRY_RUN: true
       - name: Register new Julia Package version
         uses: n6171028/julia-package-publish@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          version: ${{steps.tagger.outputs.new_tag}}
-          ssh_key: ${{ secrets.SSH }}
           julia_registry_url: 'git@github.com:$(your-registry-repo)'
           julia_registry_name: '$(your-registry-name)'
-          julia_registry_branch: 'master'
+          release_branches: 'master,main'
 ```
 
-Please add `paths` session in the trigger since this action will automatically push the new Project.toml in the repository. Please add `paths` without `**.toml` to prevent endlessly and recursively triggering actions.
+Please add `paths` session in the trigger since this action will automatically register the new version to the registry. Please add `paths` without `**.toml` to prevent endlessly and recursively triggering actions.
 
 ## License
 
