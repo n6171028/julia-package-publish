@@ -22,6 +22,7 @@ end
 registry_url = ARGS[1]
 registry_name = ARGS[2]
 release_branches = ARGS[3]
+strip_v = ARGS[4]
 
 # Read the Project.toml file in the package
 fname = "Project.toml";
@@ -38,6 +39,10 @@ current_branch = replace(current_branch, "heads/"=>"")
 branches = split(release_branches, ',')
 if current_branch ∉ branches
     @info "This branch $current_branch is not a releasing branch $release_branches, skip registering"
+    # Determine whether version number should started with a 'v' letter
+    if lowercase(strip_v) != "true"
+        version_string_in_project_toml = "v"*version_string_in_project_toml
+    end
     run(`echo "::set-output name=version::$(version_string_in_project_toml)"`)
     exit()
 end
@@ -96,14 +101,14 @@ else
     else 
         current_patch += 1
     end
-    julia_version_string = "$current_major.$current_minor.$current_patch"
 
+    julia_version_string = "$current_major.$current_minor.$current_patch"
     @info "Bumping version number to $julia_version_string"
     dict_project["version"] = julia_version_string
     open(fname, "w") do io
         TOML.print(io, dict_project)
     end
-
+    
     @info "Commiting and pushing the Project.toml"
     # Commit the new Project.toml
     run(`$(git()) add Project.toml`)
@@ -118,6 +123,11 @@ else
     @info readchomp(`$(git()) status`)
 end
 
+# Determine whether version number should started with a 'v' letter
+if lowercase(strip_v) != "true"
+    julia_version_string = "v"*julia_version_string
+end
+
 # Register the new version in the Julia registry
 @info readchomp(`$(git()) status`)
 @info readchomp(`$(git()) restore .`)
@@ -126,7 +136,7 @@ register(project_name, registry_name; push = true)
 
 # Tag
 @info "Creating tag $julia_version_string"
-run(`$(git()) tag "julia-registered-v$(julia_version_string)"`)
+run(`$(git()) tag "julia-registered-$(julia_version_string)"`)
 if isempty(URL)
     run(`$(git()) push --tags`)
 else

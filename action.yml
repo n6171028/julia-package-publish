@@ -14,6 +14,10 @@ inputs:
     description: Only register and tag if triggered from these branches
     required: false
     default: 'master,main'
+  strip_v:
+    description: Strip v from the version number
+    required: false
+    default: 'false'
 outputs:
   version:
     description: 'The version registered to the Julia registry'
@@ -30,7 +34,7 @@ runs:
         fi
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "<>"
-        julia "$GITHUB_ACTION_PATH"/register.jl ${{inputs.julia_registry_url}} ${{inputs.julia_registry_name}} ${{inputs.release_branches}}
+        julia "$GITHUB_ACTION_PATH"/register.jl ${{inputs.julia_registry_url}} ${{inputs.julia_registry_name}} ${{inputs.release_branches}} ${{inputs.strip_v}}
 branding:
   icon: package
   color: red
