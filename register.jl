@@ -111,6 +111,7 @@ else
     
     @info "Commiting and pushing the Project.toml"
     # Commit the new Project.toml
+    run(`$(git()) pull`)
     run(`$(git()) add Project.toml`)
     run(`$(git()) commit -m "Update version to v$julia_version_string"`)
     run(`$(git()) restore .`)
@@ -131,6 +132,7 @@ end
 # Register the new version in the Julia registry
 @info readchomp(`$(git()) status`)
 @info readchomp(`$(git()) restore .`)
+@info readchomp(`$(git()) pull`)
 pkg"develop ."
 register(project_name, registry_name; push = true)
 
