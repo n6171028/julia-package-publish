@@ -49,9 +49,9 @@ end
 
 # Add the private registry
 Pkg.Registry.add(RegistrySpec(url=registry_url, name=registry_name))
-
+Pkg.Registry.update(RegistrySpec(url=registry_url, name=registry_name))
 # Find the latest version from the registry
-max_version = string(findmaxversion("/home/runner/.julia/", registry_name, project_name))
+max_version = string(findmaxversion(joinpath(ENV["HOME"],".julia/"), registry_name, project_name))
 registered_major, registered_minor, registered_patch = parse.(Int, split(max_version, '.'))
 registered_version_num = 1000000 * registered_major + 1000 * registered_minor + registered_patch
 @info "Found the latest version number in the registry is $max_version"
