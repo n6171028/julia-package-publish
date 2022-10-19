@@ -43,7 +43,7 @@ if current_branch ∉ branches
     if lowercase(strip_v) != "true"
         version_string_in_project_toml = "v"*version_string_in_project_toml
     end
-    run(`echo "::set-output name=version::$(version_string_in_project_toml)"`)
+    write(open(ENV["GITHUB_OUTPUT"], "w"), "version=$(version_string_in_project_toml)")
     exit()
 end
 
@@ -145,4 +145,4 @@ else
     run(`$(git()) push --tags $(URL)`)
 end
 
-run(`echo "::set-output name=version::$(julia_version_string)"`)
+write(open(ENV["GITHUB_OUTPUT"], "w"), "version=$(julia_version_string)")
